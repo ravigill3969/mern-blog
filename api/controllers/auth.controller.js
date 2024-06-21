@@ -15,7 +15,7 @@ export const signup = async (req, res, next) => {
     // Check if the user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return next(errorHandler(400, "this email is already in use"));
+      return next(errorHandler(400, "This email is already in use"));
     }
 
     // Create a new user
