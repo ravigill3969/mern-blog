@@ -1,20 +1,21 @@
 import User from "../models/user.model.js";
+import { errorHandler } from "../utils/error.js";
 
-export const signup = async (req, res) => {
+export const signup = async (req, res, next) => {
   const { username, email, password } = req.body;
 
   // Validate input fields
   if (!username || !email || !password) {
-    return res
-      .status(400)
-      .json({ message: "Username, email, and password are required" });
+    return next(
+      errorHandler(400, "Username, email, and password are required")
+    );
   }
 
   try {
     // Check if the user already exists
-    const existingUser = await User.findOne({ email }).select("+password");
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+      return next(errorHandler(400, "this email is already in use"));
     }
 
     // Create a new user
@@ -32,7 +33,6 @@ export const signup = async (req, res) => {
       user: userWithoutPassword,
     });
   } catch (error) {
-    console.error("Error during user signup:", error);
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 };
