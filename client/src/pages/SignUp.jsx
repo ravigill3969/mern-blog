@@ -30,7 +30,7 @@ function SignUp() {
       if (data.success === false) {
         setErrorMessage(data.message);
       }else{
-        navigate('/sign-in')
+        navigate('/sign-in')  
       }
 
       setLoading(false);
