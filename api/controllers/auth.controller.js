@@ -29,6 +29,7 @@ export const signup = async (req, res, next) => {
     };
 
     res.status(201).json({
+      status:"success",
       message: "User created successfully",
       user: userWithoutPassword,
     });
