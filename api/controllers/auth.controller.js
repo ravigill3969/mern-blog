@@ -40,7 +40,6 @@ export const signup = async (req, res, next) => {
   }
 };
 
-
 //Sing-in
 export const signin = async (req, res, next) => {
   const { email, password } = req.body;
@@ -73,6 +72,65 @@ export const signin = async (req, res, next) => {
         httpOnly: true,
       })
       .json({ success: true, user: userWithoutPassword });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const google = async (req, res, next) => {
+  const { name, email, googlePhotoUrl } = req.body;
+
+  try {
+    // Check if the user already exists
+    const validUser = await User.findOne({ email });
+
+    if (validUser) {
+      // User exists, generate a JWT token
+      const token = jwt.sign({ id: validUser._id }, process.env.JWT_SECRET, {
+        expiresIn: "30d",
+      });
+
+      // Remove the password field from the user object
+      const { password: userPassword, ...userWithoutPassword } = validUser._doc;
+
+      // Send the token and user info in the response
+      res
+        .status(200)
+        .cookie("access_token", token, {
+          httpOnly: true,
+        })
+        .json({ success: true, user: userWithoutPassword });
+    } else {
+      // User does not exist, create a new user
+      const password = Math.random().toString(36).slice(-8);
+
+      const user = await User.create({
+        username:
+          name.toLowerCase().split(" ").join("") +
+          Math.random().toString(36).slice(-4),
+        email,
+        password,
+        profilePicture: googlePhotoUrl,
+      });
+
+      // If user creation is successful, generate a JWT token
+      if (user) {
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+          expiresIn: "30d",
+        });
+
+        // Remove the password field from the user object
+        const { password: userPassword, ...userWithoutPassword } = user._doc;
+
+        // Send the token and user info in the response
+        res
+          .status(201)
+          .cookie("access_token", token, {
+            httpOnly: true,
+          })
+          .json({ success: true, user: userWithoutPassword });
+      }
+    }
   } catch (error) {
     next(error);
   }
