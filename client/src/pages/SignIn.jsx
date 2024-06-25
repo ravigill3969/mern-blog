@@ -2,11 +2,18 @@ import { Alert, Button, Label, Spinner, TextInput } from "flowbite-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import {
+  signInSuccess,
+  signInStart,
+  signInFailure,
+} from "../redux/user/userSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 function SignIn() {
   const [formData, setFormData] = useState({});
-  const [errorMessage, setErrorMessage] = useState("");
-  const [loading, setLoading] = useState(false);
+  const loading = useSelector((state) => state.user.loading);
+  const errorMessage = useSelector((state) => state.user.error);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -16,30 +23,25 @@ function SignIn() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.email || !formData.password) {
-      return setErrorMessage("Please fill out all fields.");
+      return dispatch(signInFailure("Please fill all the fields!!"));
     }
 
     try {
-      setLoading(true);
-      setErrorMessage("");
+      dispatch(signInStart());
       const res = await axios.post(
         "http://localhost:3000/api/auth/signin",
         formData
       );
       const data = res.data;
       if (data.success === false) {
-        setErrorMessage(data.message);
-      }else{
-        navigate('/')  
+        console.log(data.response.data.message)
+        dispatch(signInFailure(data));
+      } else {
+        dispatch(signInSuccess(data));
+        navigate("/");
       }
-
-      setLoading(false);
     } catch (error) {
-      setErrorMessage(
-        error.response?.data?.message || "An error occurred during signin."
-      );
-      navigate("/");
-      setLoading(false);
+      dispatch(signInFailure(error.response.data.message));
     }
   };
 
