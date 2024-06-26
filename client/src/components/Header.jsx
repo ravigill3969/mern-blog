@@ -7,7 +7,7 @@ import {
   Navbar,
   TextInput,
 } from "flowbite-react";
-import { Link, useLocation, useResolvedPath } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { AiOutlineSearch } from "react-icons/ai";
 import { FaMoon,FaSun } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
