@@ -5,7 +5,6 @@ import DashProfile from "../components/DashProfile";
 
 function Dashboard() {
   const location = useLocation();
-  console.log(location);
   const [tab, setTab] = useState();
 
   useEffect(() => {
