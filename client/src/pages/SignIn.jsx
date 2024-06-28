@@ -40,7 +40,7 @@ function SignIn() {
         console.log(data.response.data.message)
         dispatch(signInFailure(data));
       } else {
-        dispatch(signInSuccess(data));
+        dispatch(signInSuccess(data.user));
         navigate("/");
       }
     } catch (error) {
