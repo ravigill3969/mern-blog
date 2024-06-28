@@ -12,6 +12,7 @@ import OAuth from "../components/OAuth";
 
 function SignIn() {
   const [formData, setFormData] = useState({});
+  console.log(formData)
   const loading = useSelector((state) => state.user.loading);
   const errorMessage = useSelector((state) => state.user.error);
   const dispatch = useDispatch();
@@ -31,7 +32,8 @@ function SignIn() {
       dispatch(signInStart());
       const res = await axios.post(
         "http://localhost:3000/api/auth/signin",
-        formData
+        formData,
+        { withCredentials: true }
       );
       const data = res.data;
       if (data.success === false) {

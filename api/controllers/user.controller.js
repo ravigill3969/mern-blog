@@ -11,52 +11,61 @@ export const update = async (req, res, next) => {
     return next(errorHandler(403, "You are not allowed to update this user"));
   }
 
-  if (req.body.password) {
-    if (req.body.password.length < 6) {
-      return next(errorHandler(400, "Password must be atleasr 6 characters"));
-    }
-  }
-
-  if (req.body.username) {
-    if (req.body.username.length < 7 || req.body.username.length > 20) {
-      return next(
-        errorHandler(400, "Username must be between 7 and 20 characters")
-      );
-    }
-
-    if (req.body.username.includes(" ")) {
-      return next(errorHandler(400, "Username cannot contain spaces"));
+  try {
+    const updateData = {};
+    console.log("yooooooo")
+    // Validate and hash password if provided
+    if (req.body.password) {
+      if (req.body.password.length < 6) {
+        return next(
+          errorHandler(400, "Password must be at least 6 characters")
+        );
+      }
+      const hashedPassword = await bcrypt.hash(req.body.password, 12);
+      updateData.password = hashedPassword;
     }
 
-    if (req.body.username !== req.body.username.toLowerCase()) {
-      return next(errorHandler(400, "Username must be lowercase"));
+    // Validate username if provided
+    if (req.body.username) {
+      if (req.body.username.length < 7 || req.body.username.length > 20) {
+        return next(
+          errorHandler(400, "Username must be between 7 and 20 characters")
+        );
+      }
+
+      if (req.body.username.includes(" ")) {
+        return next(errorHandler(400, "Username cannot contain spaces"));
+      }
+
+      if (req.body.username !== req.body.username.toLowerCase()) {
+        return next(errorHandler(400, "Username must be lowercase"));
+      }
+
+      if (!req.body.username.match(/^[a-zA-Z0-9]+$/)) {
+        return next(
+          errorHandler(400, "Username can only contain letters and numbers")
+        );
+      }
+
+      updateData.username = req.body.username;
     }
 
-    if (!req.body.username.match(/^[a-zA-Z0-9]+$/)) {
-      return next(
-        errorHandler(400, "Username can only contain letters and numbers")
-      );
-    }
+    // Add other fields if provided
+    if (req.body.email) updateData.email = req.body.email;
+    if (req.body.profilePicture)
+      updateData.profilePicture = req.body.profilePicture;
 
-    const hashedPassword = await bcrypt.hash(req.body.password, 12);
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.userId,
+      {
+        $set: updateData,
+      },
+      { new: true }
+    );
 
-    try {
-      const updatedUser = await User.findByIdAndUpdate(
-        req.params.userId,
-        {
-          $set: {
-            username: req.body.username,
-            email: req.body.email,
-            profilePicture: req.body.profilePicture,
-            password:hashedPassword,
-          },
-        },
-        { new: true } //if not included it is gonna send the older info.
-      );
-      const { password, ...rest } = updatedUser._doc;
-      res.status(200).json(rest);
-    } catch (error) {
-      next(error);
-    }
+    const { password, ...rest } = updatedUser._doc;
+    res.status(200).json(rest);
+  } catch (error) {
+    next(error);
   }
 };

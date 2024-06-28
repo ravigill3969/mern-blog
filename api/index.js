@@ -20,7 +20,12 @@ mongoose
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173", // Front-end URL
+    credentials: true,
+  })
+);
 
 app.listen(3000, () => {
   console.log("i am running!!!");

@@ -6,7 +6,6 @@ import jwt from "jsonwebtoken";
 export const signup = async (req, res, next) => {
   const { username, email, password } = req.body;
 
-  // Validate input fields
   if (!username || !email || !password) {
     return next(
       errorHandler(400, "Username, email, and password are required")
@@ -14,27 +13,31 @@ export const signup = async (req, res, next) => {
   }
 
   try {
-    // Check if the user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return next(errorHandler(400, "This email is already in use"));
     }
 
-    // Create a new user
     const user = await User.create({ username, email, password });
 
-    // Optionally, you can exclude the password from the response
-    const userWithoutPassword = {
-      id: user._id,
-      username: user.username,
-      email: user.email,
-    };
-
-    res.status(201).json({
-      status: "success",
-      message: "User created successfully",
-      user: userWithoutPassword,
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "30d",
     });
+
+    const { password: userPassword, ...userWithoutPassword } = user._doc;
+
+    res
+      .status(201)
+      .cookie("access_token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+      })
+      .json({
+        status: "success",
+        message: "User created successfully",
+        user: userWithoutPassword,
+      });
   } catch (error) {
     next(error);
   }
@@ -63,15 +66,16 @@ export const signin = async (req, res, next) => {
       expiresIn: "30d",
     });
 
-    // Destructure to remove password from the user object
-    const { password: userPassword, ...userWithoutPassword } = validUser._doc; // Rename the password variable
-
+    const { password: userPassword, ...userWithoutPassword } = validUser._doc;
+    console.log(token);
     res
       .status(200)
       .cookie("access_token", token, {
         httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
       })
-      .json({ success: true, user: userWithoutPassword });
+      .json({ success: true, token, user: userWithoutPassword });
   } catch (error) {
     next(error);
   }
@@ -81,27 +85,24 @@ export const google = async (req, res, next) => {
   const { name, email, googlePhotoUrl } = req.body;
 
   try {
-    // Check if the user already exists
     const validUser = await User.findOne({ email });
 
     if (validUser) {
-      // User exists, generate a JWT token
       const token = jwt.sign({ id: validUser._id }, process.env.JWT_SECRET, {
         expiresIn: "30d",
       });
 
-      // Remove the password field from the user object
       const { password: userPassword, ...userWithoutPassword } = validUser._doc;
 
-      // Send the token and user info in the response
       res
         .status(200)
         .cookie("access_token", token, {
           httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
         })
         .json({ success: true, user: userWithoutPassword });
     } else {
-      // User does not exist, create a new user
       const password = Math.random().toString(36).slice(-8);
 
       const user = await User.create({
@@ -113,20 +114,19 @@ export const google = async (req, res, next) => {
         profilePicture: googlePhotoUrl,
       });
 
-      // If user creation is successful, generate a JWT token
       if (user) {
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
           expiresIn: "30d",
         });
 
-        // Remove the password field from the user object
         const { password: userPassword, ...userWithoutPassword } = user._doc;
 
-        // Send the token and user info in the response
         res
           .status(201)
           .cookie("access_token", token, {
             httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
           })
           .json({ success: true, user: userWithoutPassword });
       }

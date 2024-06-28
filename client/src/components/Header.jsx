@@ -21,7 +21,7 @@ function Header() {
 
   const { currentUser } = useSelector((state) => state.user);
   const {theme } = useSelector((state)=>state.theme)
-
+console.log(currentUser.profilePicture);
   return (
     <Navbar className="border-b-2">
       <Link
@@ -58,17 +58,17 @@ function Header() {
             label={
               <Avatar
                 alt="user"
-                img={currentUser.user.profilePicture}
+                img={currentUser.profilePicture}
                 rounded
               />
             }
           >
             <Dropdown.Header>
               <span className="block text-sm mb-2">
-                {currentUser.user.username}
+                {currentUser.username}
               </span>
               <span className="block text-sm font-medium truncate">
-                {currentUser.user.email}
+                {currentUser.email}
               </span>
             </Dropdown.Header>
             <Link to={"/dashboard?tab=profile"}>
