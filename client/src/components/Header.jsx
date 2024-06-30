@@ -9,18 +9,38 @@ import {
 } from "flowbite-react";
 import { Link, useLocation } from "react-router-dom";
 import { AiOutlineSearch } from "react-icons/ai";
-import { FaMoon,FaSun } from "react-icons/fa";
+import { FaMoon, FaSun } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleTheme } from "../redux/theme/themeSlice";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { signOutSuccess } from "../redux/user/userSlice";   
 
 function Header() {
   const location = useLocation();
   const path = location.pathname;
+  const navigate = useNavigate(); 
 
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   const { currentUser } = useSelector((state) => state.user);
-  const {theme } = useSelector((state)=>state.theme)
+  const { theme } = useSelector((state) => state.theme);
+
+  const handleSignOut = async () => {
+    try {
+      const res = await axios.post("/api/auth/signout", {
+        withCredentials: true,
+      });
+      console.log(res);
+      if (res.status === 200) {
+        navigate("/signin");
+        dispatch(signOutSuccess());
+      }
+    } catch (error) {
+      console.log("catch error");
+      console.log(error);
+    }
+  };
   return (
     <Navbar className="border-b-2">
       <Link
@@ -44,28 +64,27 @@ function Header() {
         <AiOutlineSearch />
       </Button>
       <div className="flex gap-2 md:order-2">
-        <Button className="w-12 h-10 hidden sm:inline" pill color="gray" onClick={()=>{
-            dispatch(toggleTheme())
-          }}>
-          {theme === 'light' ? <FaSun /> : <FaMoon />}
+        <Button
+          className="w-12 h-10 hidden sm:inline"
+          pill
+          color="gray"
+          onClick={() => {
+            dispatch(toggleTheme());
+          }}
+        >
+          {theme === "light" ? <FaSun /> : <FaMoon />}
         </Button>
 
         {currentUser ? (
           <Dropdown
             arrowIcon={false}
-            inline  
+            inline
             label={
-              <Avatar
-                alt="user"
-                img={currentUser.profilePicture}
-                rounded
-              />
+              <Avatar alt="user" img={currentUser.profilePicture} rounded />
             }
           >
             <Dropdown.Header>
-              <span className="block text-sm mb-2">
-                {currentUser.username}
-              </span>
+              <span className="block text-sm mb-2">{currentUser.username}</span>
               <span className="block text-sm font-medium truncate">
                 {currentUser.email}
               </span>
@@ -74,7 +93,7 @@ function Header() {
               <DropdownItem>Profile</DropdownItem>
             </Link>
             <DropdownDivider />
-            <DropdownItem>Sign out</DropdownItem>
+            <DropdownItem onClick={handleSignOut}>Sign out</DropdownItem>
           </Dropdown>
         ) : (
           <Link to="/sign-in">

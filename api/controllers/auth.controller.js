@@ -67,7 +67,7 @@ export const signin = async (req, res, next) => {
     });
 
     const { password: userPassword, ...userWithoutPassword } = validUser._doc;
-  
+
     res
       .status(200)
       .cookie("access_token", token, {
@@ -92,7 +92,7 @@ export const google = async (req, res, next) => {
         expiresIn: "30d",
       });
 
-        console.log(token);
+      console.log(token);
 
       const { password: userPassword, ...userWithoutPassword } = validUser._doc;
 
@@ -133,6 +133,18 @@ export const google = async (req, res, next) => {
           .json({ success: true, user: userWithoutPassword });
       }
     }
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const signout = async (req, res, next) => {
+  try {
+    console.log("signout");
+    res
+      .clearCookie("access_token")
+      .status(200)
+      .json({ message: "Signout success" });
   } catch (error) {
     next(error);
   }

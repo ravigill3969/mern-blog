@@ -12,6 +12,7 @@ import {
   deleteUserFailure,
   deleteUserStart,
   deleteUserSuccess,
+  signOutSuccess,
   updateFailure,
   updateStart,
   updateSuccess,
@@ -141,6 +142,20 @@ function DashProfile() {
     }
   };
 
+  const handleSignOut = async() => {
+    try {
+      const res =await axios.post("/api/auth/signout", { withCredentials: true });
+      console.log(res)
+      if (res.status === 200) {
+        navigate("/signin");
+        dispatch(signOutSuccess());
+      }
+    } catch (error) {
+      console.log("catch error")
+      console.log(error)
+    }
+  }
+
   return (
     <div className="max-w-lg mx-auto p-3 w-full">
       <h1 className="my-7 text-center font-semibold text-3xl">Profile</h1>
@@ -195,7 +210,7 @@ function DashProfile() {
         <span onClick={() => setShowModal(true)} className="cursor-pointer">
           Delete Account
         </span>
-        <span className="cursor-pointer">Sign out</span>
+        <span onClick={handleSignOut} className="cursor-pointer">Sign out</span>
       </div>
       {updateUserSuccess && (
         <Alert className="mt-5" color="success">
