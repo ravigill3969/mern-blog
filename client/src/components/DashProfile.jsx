@@ -18,7 +18,7 @@ import {
   updateSuccess,
 } from "../redux/user/userSlice";
 import { app } from "../firbase";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function DashProfile() {
   const { currentUser } = useSelector((state) => state.user);
@@ -142,19 +142,21 @@ function DashProfile() {
     }
   };
 
-  const handleSignOut = async() => {
+  const handleSignOut = async () => {
     try {
-      const res =await axios.post("/api/auth/signout", { withCredentials: true });
-      console.log(res)
+      const res = await axios.post("/api/auth/signout", {
+        withCredentials: true,
+      });
+      console.log(res);
       if (res.status === 200) {
         navigate("/signin");
         dispatch(signOutSuccess());
       }
     } catch (error) {
-      console.log("catch error")
-      console.log(error)
+      console.log("catch error");
+      console.log(error);
     }
-  }
+  };
 
   return (
     <div className="max-w-lg mx-auto p-3 w-full">
@@ -205,12 +207,25 @@ function DashProfile() {
         <Button type="submit" gradientDuoTone="purpleToBlue">
           Update
         </Button>
+        {currentUser.isAdmin && (
+          <Link to={'/create-post'}>
+            <Button
+              gradientDuoTone="purpleToPink"
+              className="w-full"
+              type="button"
+            >
+              Create a post
+            </Button>
+          </Link>
+        )}
       </form>
       <div className="text-red-500 flex justify-between mt-5">
         <span onClick={() => setShowModal(true)} className="cursor-pointer">
           Delete Account
         </span>
-        <span onClick={handleSignOut} className="cursor-pointer">Sign out</span>
+        <span onClick={handleSignOut} className="cursor-pointer">
+          Sign out
+        </span>
       </div>
       {updateUserSuccess && (
         <Alert className="mt-5" color="success">
