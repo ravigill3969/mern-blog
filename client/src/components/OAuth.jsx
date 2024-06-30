@@ -25,11 +25,12 @@ function OAuth() {
         name: results.user.displayName,
         email: results.user.email,
         googlePhotoUrl: results.user.photoURL,
-      });
+      },{withCredentials: true});
       
       const data = res.data
       if(data.success === true){
-        dispatch(signInSuccess(data))
+        dispatch(signInSuccess(data.user))
+        console.log(data)
         navigate('/')
       }else{
         dispatch(signInFailure(data))

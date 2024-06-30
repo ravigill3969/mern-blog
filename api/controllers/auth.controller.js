@@ -92,6 +92,8 @@ export const google = async (req, res, next) => {
         expiresIn: "30d",
       });
 
+        console.log(token);
+
       const { password: userPassword, ...userWithoutPassword } = validUser._doc;
 
       res

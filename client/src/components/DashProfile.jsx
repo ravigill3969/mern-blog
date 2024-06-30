@@ -1,4 +1,4 @@
-import { Alert, Button, TextInput } from "flowbite-react";
+import { Alert, Button, TextInput, Modal } from "flowbite-react";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
@@ -9,11 +9,15 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 import {
+  deleteUserFailure,
+  deleteUserStart,
+  deleteUserSuccess,
   updateFailure,
   updateStart,
   updateSuccess,
 } from "../redux/user/userSlice";
 import { app } from "../firbase";
+import { Navigate, useNavigate } from "react-router-dom";
 
 function DashProfile() {
   const { currentUser } = useSelector((state) => state.user);
@@ -25,6 +29,8 @@ function DashProfile() {
   const [imageFileUploadError, setImageFileUploadError] = useState("");
   const [imageFileUploading, setImageFileUploading] = useState(false);
   const [updateUserSuccess, setUpdateUserSuccess] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     username: currentUser.username,
@@ -98,7 +104,6 @@ function DashProfile() {
       return;
     }
     try {
-      console.log(formData);
       dispatch(updateStart());
       const res = await axios.put(
         `/api/user/update/${currentUser._id}`,
@@ -112,8 +117,27 @@ function DashProfile() {
         setUpdateUserSuccess("Profile updated successfully");
       }
     } catch (error) {
-      console.log(error)
       dispatch(updateFailure(error));
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    setShowModal(false);
+    try {
+      dispatch(deleteUserStart());
+      const res = await axios.delete(
+        `/api/user/delete/${currentUser._id}`,
+        formData,
+        { withCredentials: true }
+      );
+
+      if (!res.statusCode === 200) {
+        dispatch(deleteUserFailure("Failed to delete user"));
+      } else {
+        dispatch(deleteUserSuccess());
+      }
+    } catch (error) {
+      dispatch(deleteUserFailure(error));
     }
   };
 
@@ -142,6 +166,7 @@ function DashProfile() {
         {imageFileUploadError && (
           <Alert color="failure">{imageFileUploadError}</Alert>
         )}
+
         <TextInput
           type="text"
           id="username"
@@ -167,7 +192,9 @@ function DashProfile() {
         </Button>
       </form>
       <div className="text-red-500 flex justify-between mt-5">
-        <span className="cursor-pointer">Delete Account</span>
+        <span onClick={() => setShowModal(true)} className="cursor-pointer">
+          Delete Account
+        </span>
         <span className="cursor-pointer">Sign out</span>
       </div>
       {updateUserSuccess && (
@@ -175,6 +202,29 @@ function DashProfile() {
           {updateUserSuccess}
         </Alert>
       )}
+      <Modal
+        show={showModal}
+        onClose={() => setShowModal(false)}
+        popup
+        size="md"
+      >
+        <Modal.Header>Delete Account</Modal.Header>
+        <Modal.Body>
+          Are you sure you want to delete your account? This action cannot be
+          undone.
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            gradientDuoTone="redToOrange"
+            onClick={() => setShowModal(false)}
+          >
+            Cancel
+          </Button>
+          <Button gradientDuoTone="orangeToRed" onClick={handleDeleteUser}>
+            Delete Account
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }

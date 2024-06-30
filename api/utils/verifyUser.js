@@ -20,7 +20,7 @@ export const verifyToken = (req, res, next) => {
 
 export const testreq = async (req, res, next) => {
   console.log(1);
-  console.log(req.body);
+  console.log(req);
   console.log(2);
   next();
 };
