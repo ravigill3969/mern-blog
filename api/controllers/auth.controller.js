@@ -120,7 +120,7 @@ export const google = async (req, res, next) => {
         const token = jwt.sign({ id: user._id,isAdmin:user.isAdmin }, process.env.JWT_SECRET, {
           expiresIn: "30d",
         });
-
+        console.log(token)
         const { password: userPassword, ...userWithoutPassword } = user._doc;
 
         res
