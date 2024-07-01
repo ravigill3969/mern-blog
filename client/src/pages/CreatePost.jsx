@@ -1,4 +1,4 @@
-import { Button, FileInput, Select, TextInput } from "flowbite-react";
+import { Alert, Button, FileInput, Select, TextInput } from "flowbite-react";
 import { useState } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
@@ -10,11 +10,16 @@ import {
 } from "firebase/storage";
 import { app } from "../firbase";
 import axios from "axios";
+import {  useNavigate } from "react-router-dom";
+
+
 
 function CreatePost() {
   const [file, setFile] = useState(null);
   const [imageUploadProgress, setImageUploadProgress] = useState(null);
   const [imageUploadError, setImageUploadError] = useState(null);
+  const [publishError, setPublishError] = useState(null);
+  const navigate = useNavigate()
   const [formData, setFormData] = useState({
     title: "",
     category: "uncatergorized",
@@ -71,19 +76,33 @@ function CreatePost() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const res = await axios.post("api/post/create-post", formData, {
-      withCredentials: true,
-    });
-    console.log(res);
-    setFormData({
-      title: "",
-      category: "uncatergorized",
-      content: "",
-      image: "",
-    });
+    try {
+      const res = await axios.post("api/post/create-post", formData, {
+        withCredentials: true,
+      });
+      console.log(res)
+      if (res.status === 201) {
+        setPublishError(null);
+        console.log("object")
+        console.log(res.data.slug)
+        navigate(`/post/${res.data.slug}`);
+      } else {
+        console.log("2")
+        setPublishError(res.message);
+        return;
+      }
+      setFormData({
+        title: "",
+        category: "uncatergorized",
+        content: "",
+        image: "",
+      });
+    } catch (error) {
+      console.log(error)
+      setPublishError("Something went wrong while publishing the post");
+    }
   };
-  console.log(formData)
+  console.log(formData);
   return (
     <div className="p-3 max-w-3xl mx-auto min-h-screen">
       <h1 className="text-center text-3xl my-7 font-semibold">Create a Post</h1>
@@ -126,7 +145,11 @@ function CreatePost() {
           <p className="text-red-500 text-sm">{imageUploadError}</p>
         )}
         {formData.image && (
-          <img src={formData.image} alt="uploaded" className="w-full h-12 object-cover" />
+          <img
+            src={formData.image}
+            alt="uploaded"
+            className="w-full h-12 object-cover"
+          />
         )}
         <ReactQuill
           onChange={handleQuillChange}
@@ -140,6 +163,9 @@ function CreatePost() {
         <Button type="submit" gradientDuoTone="purpleToPink">
           Publish
         </Button>
+        {publishError && (
+          <Alert color={'failure'} className="mt-5">{publishError}</Alert>
+        )}
       </form>
     </div>
   );
