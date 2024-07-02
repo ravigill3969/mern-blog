@@ -1,8 +1,8 @@
-import { parse } from "dotenv";
 import Post from "../models/post.modal.js";
 import { errorHandler } from "../utils/error.js";
 
 export const create = async (req, res, next) => {
+  
   console.log(req.user.isAdmin);
   if (!req.user.isAdmin)
     return next(errorHandler(403, "You are not allowed to create a post"));
@@ -29,7 +29,6 @@ export const create = async (req, res, next) => {
     next(error);
   }
 };
-
 export const getposts = async (req, res, next) => {
   console.log(1);
   try {
@@ -59,7 +58,7 @@ export const getposts = async (req, res, next) => {
       .limit(limit);
 
     // Fetch total post count and posts updated in the last month
-    const totalPosts = await Post.countDocuments();
+    const totalPosts = await Post.countDocuments(query); // Count only documents matching the query
 
     const now = new Date();
     const oneMonthAgo = new Date(
