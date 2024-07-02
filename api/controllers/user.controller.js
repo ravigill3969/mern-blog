@@ -13,7 +13,6 @@ export const update = async (req, res, next) => {
 
   try {
     const updateData = {};
-    console.log("yooooooo");
     // Validate and hash password if provided
     if (req.body.password) {
       if (req.body.password.length < 6) {
@@ -62,7 +61,7 @@ export const update = async (req, res, next) => {
       },
       { new: true }
     );
-
+    
     const { password, ...rest } = updatedUser._doc;
     res.status(200).json(rest);
   } catch (error) {
@@ -75,10 +74,10 @@ export const deleteUser = async (req, res, next) => {
     return next(errorHandler(403, "You are not allowed to delete this user"));
   }
   const userId = req.params.userId;
-  try{
-  await User.findByIdAndDelete({_id: userId});
-  res.status(200).json({ message: "User deleted successfully" });
+  try {
+    await User.findByIdAndDelete({ _id: userId });
+    res.status(200).json({ message: "User deleted successfully" });
   } catch (error) {
     next(error);
-  } 
+  }
 };

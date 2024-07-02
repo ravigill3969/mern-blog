@@ -11,6 +11,7 @@ export const signup = async (req, res, next) => {
       errorHandler(400, "Username, email, and password are required")
     );
   }
+  
 
   try {
     const existingUser = await User.findOne({ email });
