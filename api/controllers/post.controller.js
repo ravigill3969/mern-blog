@@ -2,7 +2,6 @@ import Post from "../models/post.modal.js";
 import { errorHandler } from "../utils/error.js";
 
 export const create = async (req, res, next) => {
-  
   console.log(req.user.isAdmin);
   if (!req.user.isAdmin)
     return next(errorHandler(403, "You are not allowed to create a post"));
@@ -72,6 +71,22 @@ export const getposts = async (req, res, next) => {
     });
 
     res.status(200).json({ posts, totalPosts, postsInLastMonth });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deletepost = async (req, res, next) => {
+  console.log(req.params);
+  if (!req.user.isAdmin || req.user.id !== req.params.userId)
+    return next(errorHandler(403, "You are not allowed to delete a post"));
+
+  try {
+    const post = await Post.findOneAndDelete(req.params.postId);
+
+    if (!post) return next(errorHandler(404, "Post not found"));
+
+    res.status(200).json(post);
   } catch (error) {
     next(error);
   }
