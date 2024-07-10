@@ -2,7 +2,7 @@ import Post from "../models/post.modal.js";
 import { errorHandler } from "../utils/error.js";
 
 export const create = async (req, res, next) => {
-  console.log(req.user.isAdmin);
+  console.log("create post");
   if (!req.user.isAdmin)
     return next(errorHandler(403, "You are not allowed to create a post"));
 
@@ -28,8 +28,9 @@ export const create = async (req, res, next) => {
     next(error);
   }
 };
+
 export const getposts = async (req, res, next) => {
-  console.log(1);
+  console.log("get posts");
   try {
     const startIndex = parseInt(req.query.startIndex) || 0;
     const limit = parseInt(req.query.limit) || 9;
@@ -48,7 +49,7 @@ export const getposts = async (req, res, next) => {
       ];
     }
 
-    console.log("Query object:", query);
+    // console.log("Query object:", query);
 
     // Fetch posts with the constructed query
     const posts = await Post.find(query)
@@ -69,7 +70,7 @@ export const getposts = async (req, res, next) => {
     const postsInLastMonth = await Post.countDocuments({
       updatedAt: { $gte: oneMonthAgo },
     });
-
+    // console.log("here comes the posts");
     res.status(200).json({ posts, totalPosts, postsInLastMonth });
   } catch (error) {
     next(error);
@@ -77,7 +78,7 @@ export const getposts = async (req, res, next) => {
 };
 
 export const deletepost = async (req, res, next) => {
-  console.log(req.params);
+  console.log("delete post");
   if (!req.user.isAdmin || req.user.id !== req.params.userId)
     return next(errorHandler(403, "You are not allowed to delete a post"));
 
@@ -85,6 +86,33 @@ export const deletepost = async (req, res, next) => {
     const post = await Post.findOneAndDelete(req.params.postId);
 
     if (!post) return next(errorHandler(404, "Post not found"));
+
+    res.status(200).json(post);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updatepost = async (req, res, next) => {
+  console.log("update post");
+  if (!req.user.isAdmin || req.user.id !== req.params.userId)
+    return next(errorHandler(403, "You are not allowed to update a post"));
+
+  try {
+    const post = await Post.findByIdAndUpdate(
+      req.params.postId,
+      {
+        $set: {
+          ttlle: req.body.title,
+          content: req.body.content,
+          categories: req.body.categories,
+          image: req.body.image,
+        },
+      },
+      {
+        new: true,
+      }
+    );
 
     res.status(200).json(post);
   } catch (error) {

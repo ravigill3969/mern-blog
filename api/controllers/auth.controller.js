@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 export const signup = async (req, res, next) => {
+  console.log("signup");
   const { username, email, password } = req.body;
 
   if (!username || !email || !password) {
@@ -11,7 +12,6 @@ export const signup = async (req, res, next) => {
       errorHandler(400, "Username, email, and password are required")
     );
   }
-  
 
   try {
     const existingUser = await User.findOne({ email });
@@ -32,7 +32,7 @@ export const signup = async (req, res, next) => {
       .cookie("access_token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: "none",
       })
       .json({
         status: "success",
@@ -46,6 +46,7 @@ export const signup = async (req, res, next) => {
 
 //Sing-in
 export const signin = async (req, res, next) => {
+  console.log("signin");
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -63,9 +64,13 @@ export const signin = async (req, res, next) => {
       return next(errorHandler(400, "Invalid email or password"));
     }
 
-    const token = jwt.sign({ id: validUser._id,isAdmin:validUser.isAdmin }, process.env.JWT_SECRET, {
-      expiresIn: "30d",
-    });
+    const token = jwt.sign(
+      { id: validUser._id, isAdmin: validUser.isAdmin },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "30d",
+      }
+    );
 
     const { password: userPassword, ...userWithoutPassword } = validUser._doc;
 
@@ -74,7 +79,7 @@ export const signin = async (req, res, next) => {
       .cookie("access_token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: "none",
       })
       .json({ success: true, token, user: userWithoutPassword });
   } catch (error) {
@@ -83,15 +88,20 @@ export const signin = async (req, res, next) => {
 };
 
 export const google = async (req, res, next) => {
+  console.log("google");
   const { name, email, googlePhotoUrl } = req.body;
 
   try {
     const validUser = await User.findOne({ email });
 
     if (validUser) {
-      const token = jwt.sign({ id: validUser._id ,isAdmin:validUser.isAdmin}, process.env.JWT_SECRET, {
-        expiresIn: "30d",
-      });
+      const token = jwt.sign(
+        { id: validUser._id, isAdmin: validUser.isAdmin },
+        process.env.JWT_SECRET,
+        {
+          expiresIn: "30d",
+        }
+      );
 
       console.log(token);
 
@@ -118,10 +128,14 @@ export const google = async (req, res, next) => {
       });
 
       if (user) {
-        const token = jwt.sign({ id: user._id,isAdmin:user.isAdmin }, process.env.JWT_SECRET, {
-          expiresIn: "30d",
-        });
-        console.log(token)
+        const token = jwt.sign(
+          { id: user._id, isAdmin: user.isAdmin },
+          process.env.JWT_SECRET,
+          {
+            expiresIn: "30d",
+          }
+        );
+        console.log(token);
         const { password: userPassword, ...userWithoutPassword } = user._doc;
 
         res
@@ -129,7 +143,7 @@ export const google = async (req, res, next) => {
           .cookie("access_token", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
+            sameSite: "none",
           })
           .json({ success: true, user: userWithoutPassword });
       }
@@ -140,6 +154,7 @@ export const google = async (req, res, next) => {
 };
 
 export const signout = async (req, res, next) => {
+  console.log("signout");
   try {
     console.log("signout");
     res

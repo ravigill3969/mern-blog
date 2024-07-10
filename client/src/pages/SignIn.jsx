@@ -27,7 +27,7 @@ function SignIn() {
     if (!formData.email || !formData.password) {
       return dispatch(signInFailure("Please fill all the fields!!"));
     }
-
+    console.log(formData);
     try {
       dispatch(signInStart());
       const res = await axios.post(
@@ -35,7 +35,7 @@ function SignIn() {
         formData,
         { withCredentials: true }
       );
-
+      console.log(res);
       const data = res.data;
       if (data.success === false) {
         console.log(data.response.data.message);

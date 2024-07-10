@@ -2,9 +2,9 @@ import jwt from "jsonwebtoken";
 import { errorHandler } from "./error.js";
 
 export const verifyToken = (req, res, next) => {
-  console.log(req)
+  console.log(req.cookies)
+  console.log("verify token");
   const token = req.cookies.access_token;
-  console.log(token);
 
   if (!token) {
     return next(errorHandler(401, "Unauthorized"));
@@ -21,8 +21,9 @@ export const verifyToken = (req, res, next) => {
 };
 
 export const testreq = async (req, res, next) => {
-  console.log(1);
-  console.log(req);
-  console.log(2);
+  console.log((Math.random() * 1000).toFixed(0) * 1);
+  // console.log(req.headers);
+  console.log(req.cookies);
+  console.log((Math.random() * 1000).toFixed(0) * 1);
   next();
 };

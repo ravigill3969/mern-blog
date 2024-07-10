@@ -1,5 +1,5 @@
 import { Alert, Button, FileInput, Select, TextInput } from "flowbite-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import {
@@ -10,22 +10,50 @@ import {
 } from "firebase/storage";
 import { app } from "../firbase";
 import axios from "axios";
-import {  useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { UseUpdate } from "../../functions/useUpdate";
 
-
-
-function CreatePost() {
+function UpdatePost() {
   const [file, setFile] = useState(null);
   const [imageUploadProgress, setImageUploadProgress] = useState(null);
   const [imageUploadError, setImageUploadError] = useState(null);
   const [publishError, setPublishError] = useState(null);
-  const navigate = useNavigate()
+  const { postId } = useParams();
+  const navigate = useNavigate();
+  const { currentUser } = useSelector((state) => state.user);
+
   const [formData, setFormData] = useState({
     title: "",
-    category: "uncatergorized",
+    categories: "uncategorized",
     content: "",
     image: "",
   });
+
+  useEffect(() => {
+    const fetchPost = async () => {
+      try {
+        const res = await axios.get(
+          `http://127.0.0.1:3000/api/post/getposts?postId=${postId}`,
+          {
+            withCredentials: true,
+          }
+        );
+
+        if (res.status === 200) {
+          const { content, title, image, categories } = res.data.posts[0];
+          setFormData({ title, image, categories, content });
+        } else {
+          console.log(res.data.message);
+          setPublishError(res.data.message);
+        }
+      } catch (error) {
+        console.log(error);
+        setPublishError("Something went wrong while fetching the post");
+      }
+    };
+    fetchPost();
+  }, [postId]);
 
   const handleUploadImage = async () => {
     try {
@@ -74,38 +102,35 @@ function CreatePost() {
     setFormData({ ...formData, content: value });
   };
 
+  // const {postId} = useParams();
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
-      const res = await axios.post("api/post/create", formData, {
-        withCredentials: true,
-      });
-      console.log(res)
-      if (res.status === 201) {
+      const res = await UseUpdate(postId, currentUser._id, formData);
+      console.log(res);
+
+      if (res.status === 200) {
         setPublishError(null);
-        console.log("object")
-        console.log(res.data.slug)
+        setFormData({
+          title: "",
+          categories: "uncategorized",
+          content: "",
+          image: "",
+        });
         navigate(`/post/${res.data.slug}`);
       } else {
-        console.log("2")
         setPublishError(res.message);
-        return;
       }
-      setFormData({
-        title: "",
-        category: "uncatergorized",
-        content: "",
-        image: "",
-      });
     } catch (error) {
-      console.log(error)
+      console.log(error.response.data);
       setPublishError("Something went wrong while publishing the post");
     }
   };
-  console.log(formData);
+
   return (
     <div className="p-3 max-w-3xl mx-auto min-h-screen">
-      <h1 className="text-center text-3xl my-7 font-semibold">Create a Post</h1>
+      <h1 className="text-center text-3xl my-7 font-semibold">Update a Post</h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="flex flex-col gap-4 sm:flex-row justify-between">
           <TextInput
@@ -116,8 +141,12 @@ function CreatePost() {
             onChange={handleChange}
             value={formData.title}
           />
-          <Select onChange={handleChange} value={formData.category} id="select">
-            <option value={"uncatergorized"}>Uncatergorized</option>
+          <Select
+            onChange={handleChange}
+            value={formData.categories}
+            id="categories"
+          >
+            <option value={"uncategorized"}>Uncategorized</option>
             <option value={"javascript"}>Javascript</option>
             <option value={"react"}>React.js</option>
             <option value={"node"}>Node.js</option>
@@ -138,7 +167,7 @@ function CreatePost() {
             onClick={handleUploadImage}
             disabled={imageUploadProgress}
           >
-            upload Image
+            Upload Image
           </Button>
         </div>
         {imageUploadError && (
@@ -161,14 +190,16 @@ function CreatePost() {
           value={formData.content}
         />
         <Button type="submit" gradientDuoTone="purpleToPink">
-          Publish
+          Update
         </Button>
         {publishError && (
-          <Alert color={'failure'} className="mt-5">{publishError}</Alert>
+          <Alert color={"failure"} className="mt-5">
+            {publishError}
+          </Alert>
         )}
       </form>
     </div>
   );
 }
 
-export default CreatePost;
+export default UpdatePost;
