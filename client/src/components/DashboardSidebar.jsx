@@ -1,6 +1,6 @@
 import { Sidebar } from "flowbite-react";
 import { useEffect, useState } from "react";
-import { HiArrowRight, HiDocumentText, HiUser } from "react-icons/hi";
+import { HiArrowRight, HiDocumentText, HiOutlineUserGroup, HiUser } from "react-icons/hi";
 import { Link, useLocation } from "react-router-dom";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -64,6 +64,19 @@ function DashboardSidebar() {
                 Posts
               </Sidebar.Item>
             </Link>
+
+          )}
+          {currentUser.isAdmin && (
+            <Link to={"/dashboard?tab=users"}>
+              <Sidebar.Item
+                active={tab === "users"}
+                icon={HiOutlineUserGroup}
+                as="div"
+              >
+                Users
+              </Sidebar.Item>
+            </Link>
+            
           )}
         </Sidebar.ItemGroup>
         <Sidebar.ItemGroup onClick={handleSignOut}>
