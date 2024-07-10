@@ -7,21 +7,18 @@ import { FaCheck, FaTimes } from "react-icons/fa";
 
 function DashUsers() {
   const { currentUser } = useSelector((state) => state.user);
-  const [users,setUsers] = useState([]);
+  const [users, setUsers] = useState([]);
   const [showMore, setShowMore] = useState(true);
   const [showModal, setShowModal] = useState(false);
-//   const [userIdDelete, setUserIdDelete] = useState("");
+  const [userIdDelete, setUserIdDelete] = useState("");
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await axios.get(
-          `/api/user/getusers`,
-          {
-            withCredentials: true,
-          }
-        );
-        console.log(res)
+        const res = await axios.get(`/api/user/getusers`, {
+          withCredentials: true,
+        });
+        // console.log(res);
         if (res.status === 200) {
           setUsers(res.data.users);
           if (res.data.users.length < 9) setShowMore(false);
@@ -50,9 +47,23 @@ function DashUsers() {
       console.log(error);
     }
   };
+  console.log(users)
 
-    const handleDeleteUser = async () => {}
-
+  const handleDeleteUser = async () => {
+    try {
+      const res = await axios.delete(`/api/user/delete/${userIdDelete}`, {
+        withCredentials: true,
+      });
+      if (res.status === 200) {
+        setUsers(users.filter((user) => user._id !== userIdDelete));
+        setShowModal(false);
+      } else {
+        console.log(res.data.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <div className="table-auto overflow-x-scroll md:mx-auto p-3 scrollbar-track-slate-100 scrollbar-thumb-slate-300 dark:scrollbar-track-slate-700 dark:scrollbar-thumb-slate-500">
@@ -96,13 +107,19 @@ function DashUsers() {
                   </Table.Cell>
                   {/* CATEGORY */}
                   <Table.Cell>{user.email}</Table.Cell>
-                  <Table.Cell>{user.isAdmin ? (<FaCheck className="text-green-500"/>) : (<FaTimes className="text-red-500"/>)}</Table.Cell>
+                  <Table.Cell>
+                    {user.isAdmin ? (
+                      <FaCheck className="text-green-500" />
+                    ) : (
+                      <FaTimes className="text-red-500" />
+                    )}
+                  </Table.Cell>
                   {/* DELETE */}
                   <Table.Cell>
                     <span
                       onClick={() => {
                         setShowModal(true);
-                        setUsers(users._id);
+                        setUserIdDelete(user._id);
                       }}
                       className="text-red-500 font-medium hover:underline cursor-pointer"
                     >
@@ -147,7 +164,7 @@ function DashUsers() {
                 onClick={() => setShowModal(false)}
               >
                 Cancel
-              </Button>
+              </Button> 
               <Button gradientDuoTone="orangeToRed" onClick={handleDeleteUser}>
                 Delete Account
               </Button>
