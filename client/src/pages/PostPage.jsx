@@ -2,6 +2,7 @@ import axios from "axios";
 import { Button, Spinner } from "flowbite-react";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import CallToAction from "../components/CallToAction";
 
 function PostPage() {
   const { postslug } = useParams();
@@ -62,14 +63,17 @@ function PostPage() {
       />
       <div className="flex justify-between p-3 border-b border-slate-500 mx-auto w-full max-w-2xl test-xs">
         <span>{post && new Date(post.createdAt).toLocaleDateString()}</span>
-        <span>
-          {post && (post.content.length / 1000).toFixed(0) + " "}mins read
-        </span>
+        {/* <span>
+          {post && (post.content.length / 1000).toFixed(0) + 1 }{" "}mins read
+        </span> */}
       </div>
       <div
         className="prose mt-5 max-w-2xl mx-auto post-content"
         dangerouslySetInnerHTML={{ __html: post && post.content }}
       ></div>
+      <div className="max-w-4xl mx-auto w-full">
+        <CallToAction />
+      </div>
     </main>
   );
 }
